@@ -158,6 +158,7 @@ theorem binomial_theorem (x y n : ℕ) : (x + y)^n = sum (λ k => binom x y n k)
       apply sum_1_eq
       intro k
       simp
+      ring
     calc
       (x + y) ^ (n + 1) = (x + y)^n * x + (x + y)^n * y := by
         rw [Nat.pow_add]
