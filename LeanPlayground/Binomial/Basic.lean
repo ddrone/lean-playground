@@ -113,8 +113,18 @@ theorem binomial_theorem (x y n : ℕ) : (x + y)^n = sum (λ k => binom x y n k)
       intro k
       simp [binom]
       ring
-    have rw2 : sum_1 (λ k => choose n k * x^k * y^(n - k) * y) n = sum_1 (λ k => choose n k * x^k * y^(n + 1 - k)) n := by
-      sorry
+    have rw2 : sum_1 (λ k => binom x y (n + 1) k) n = sum_1 (λ k => (choose n k + choose n (k - 1)) * x^k * y^(n+1-k)) n := by
+      apply sum_1_eq
+      intro k
+      rw [binom, choose]
+      have t : k + 1 - 1 = k := by
+        rfl
+      rw [t]
+    have rw3 : sum_1 (λ k => (choose n k + choose n (k - 1)) * x^k * y^(n+1-k)) n = sum_1 (λ k => choose n k * x^k * y^(n+1-k)) n + sum_1 (λ k => choose n (k - 1) * x^k * y^(n+1-k)) n := by
+      rw [sum_1_add]
+      apply sum_1_eq
+      intro k
+      simp
     calc
       (x + y) ^ (n + 1) = (x + y)^n * x + (x + y)^n * y := by
         rw [Nat.pow_add]
@@ -129,5 +139,7 @@ theorem binomial_theorem (x y n : ℕ) : (x + y)^n = sum (λ k => binom x y n k)
         rw [t1]
         ring
       _ = sum (fun k => binom x y (n + 1) k) (n + 1) := by
-        rw [rw2]
+        rw [sum, binom, choose_n_n, sum_to_sum_1, binom, choose_n_0]
+        simp
+        rw [rw2, rw3]
         sorry
