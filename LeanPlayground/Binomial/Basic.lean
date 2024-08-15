@@ -64,6 +64,18 @@ theorem sum_1_eq (f g : ℕ → ℕ) (n : ℕ) (h : ∀ x, f (x + 1) = g (x + 1)
     simp [sum_1]
     rw [h, ih]
 
+theorem sum_1_eq_strong (f g : ℕ → ℕ) (n : ℕ) (h : ∀ x, x ≤ n → f x = g x) : sum_1 f n = sum_1 g n := by
+  induction n with
+  | zero =>
+    simp [sum_1]
+  | succ n ih =>
+    simp [sum_1]
+    rw [h, ih]
+    intro k hk
+    apply h
+    exact Nat.le_add_right_of_le hk
+    exact Nat.le_refl (n + 1)
+
 theorem sum_mult (f : ℕ → ℕ) (n x : ℕ) : sum f n * x = sum (λ k => f k * x) n := by
   induction n with
   | zero => simp [sum]
@@ -102,6 +114,27 @@ theorem sum_to_sum_1 (f : ℕ → ℕ) (n : ℕ) : sum f n = f 0 + sum_1 f n := 
     rw [ih]
     ring
 
+def f1 x y n := sum_1 (λ k => choose n k * x^k * y^(n - k) * y) n
+
+def f2 x y n := sum_1 (λ k => choose n k * x^k * y^(n + 1 - k)) n
+
+#print Nat.pow_add
+
+theorem aux_thm (y n k : ℕ) (h : k ≤ n) : y^(n - k) * y = y^(n+1-k) := by
+  have t1 : y^1 = y := by rw [Nat.pow_one]
+  nth_rw 2 [← t1]
+  rw [← Nat.pow_add]
+  have t2 : n - k + 1 = n + 1 - k := by
+    exact Eq.symm (Nat.sub_add_comm h)
+  rw [t2]
+
+theorem rw4 : sum_1 (λ k => choose n k * x^k * y^(n - k) * y) n = sum_1 (λ k => choose n k * x^k * y^(n+1-k)) n := by
+  apply sum_1_eq_strong
+  intro k hk
+  rw [← aux_thm]
+  ring
+  assumption
+
 theorem binomial_theorem (x y n : ℕ) : (x + y)^n = sum (λ k => binom x y n k) n := by
   induction n with
   | zero => simp [sum, binom, choose]
@@ -125,8 +158,6 @@ theorem binomial_theorem (x y n : ℕ) : (x + y)^n = sum (λ k => binom x y n k)
       apply sum_1_eq
       intro k
       simp
-    have rw4 : sum_1 (λ k => choose n k * x^k * y^(n - k) * y) n = sum_1 (λ k => choose n k * x^k * y^(n+1-k)) n := by
-      sorry
     calc
       (x + y) ^ (n + 1) = (x + y)^n * x + (x + y)^n * y := by
         rw [Nat.pow_add]
